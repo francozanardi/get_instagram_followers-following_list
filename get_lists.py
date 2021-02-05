@@ -5,9 +5,9 @@ import os
 
 
 #Obtiene el ID a partir de un username, en caso de error retorna una cadena de texto vacía.
-def get_id(username):
-	resp = get("https://www.instagram.com/" + username + "/?__a=1")
-
+def get_id(username, cookies):
+	resp = get("https://www.instagram.com/" + username + "/?__a=1", cookies = cookies)
+	
 	if(resp.status_code == 200):
 		return resp.json()["graphql"]["user"]["id"]
 
@@ -119,14 +119,24 @@ cookies = {
 	"sessionid": args.sessionid
 }
 
-id = get_id(args.username)
-if(id != ""):
-	print("\nLista de seguidores:\n")
-	if(not get_followers_list(id, cookies)):
-		print("Se ha producido un error al obtener la lista de seguidores de %s." % (args.username))
-		
-	print("\n" + "-"*50 + "\n")
+id = get_id(args.username, cookies)
+while(id == ""):
+	print("No se ha podido obtener el ID del usuario.")
+	print("Reintentando en 5 segundos...")
+	sleep(5);
 	
-	print("Lista de seguidos:\n")
-	if(not get_following_list(id, cookies)):
-		print("Se ha producido un error al obtener la lista de seguidos por %s." % (args.username))
+	id = get_id(args.username, cookies)
+	
+print("ID obtenida:", id)
+
+print("\nLista de seguidores:\n")
+if(not get_followers_list(id, cookies)):
+	print("Se ha producido un error al obtener la lista de seguidores de %s." % (args.username))
+	
+print("\n" + "-"*50 + "\n")
+
+print("Lista de seguidos:\n")
+if(not get_following_list(id, cookies)):
+	print("Se ha producido un error al obtener la lista de seguidos por %s." % (args.username))
+
+	
